@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">PointsOfInterests</string>
+    <string name="setlocation">Set Location</string>
+    <string name="Preferences">Preferences</string>
+</resources>
