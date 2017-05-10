@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -39,12 +40,12 @@ public class MainActivity extends Activity implements View.OnClickListener
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        Button submitButton = (Button) findViewById(R.id.submitButton);
+        submitButton.setOnClickListener(this);
 
         // this line tells OpenStreetMap about our app.
         // If you miss this out, you might get banned from OSM servers
-        Configuration.getInstance().load
-                (this, PreferenceManager.getDefaultSharedPreferences(this));
+        Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
 
         mv = (MapView)findViewById(R.id.map1);
 
@@ -115,13 +116,15 @@ public class MainActivity extends Activity implements View.OnClickListener
         double longitude = Double.parseDouble(longitudeEditText.getText().toString());
 
         mv.getController().setCenter(new GeoPoint(latitude,longitude));
+
+
     }
 
 
     public boolean onCreateOptionsMenu(Menu menu)
     {
         MenuInflater inflater=getMenuInflater();
-        inflater.inflate(R.menu.poi_menu, menu);
+        inflater.inflate(R.menu.save_load, menu);
         return true;
     }
 
@@ -179,6 +182,11 @@ public class MainActivity extends Activity implements View.OnClickListener
         double lat = Double.parseDouble ( prefs.getString("lat", "50.9") );
         double lon = Double.parseDouble ( prefs.getString("lon", "-1.4") );
         int dzl = Integer.parseInt ( prefs.getString("dzl","12"));
+        //PREVIOUS MAPPING
+
+        // NEW METHOD FOR POI /  CURRENT CENTER???
+        /*double lat = MapView.getMapCenter().getLatitude();
+        double lon = MapView.getMapCenter().getLongitude();     */
 
 
 
