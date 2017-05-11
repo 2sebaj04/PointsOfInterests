@@ -110,7 +110,7 @@ public class MainActivity extends Activity implements View.OnClickListener
             startActivityForResult(intent, 0);
             return true;
         }
-        if(item.getItemId() == R.id.choosemap)
+        /*if(item.getItemId() == R.id.choosemap)
         {
             // react to the menu item being selected...
             Intent intent = new Intent(this,MapChooseActivity.class);
@@ -123,7 +123,7 @@ public class MainActivity extends Activity implements View.OnClickListener
             Intent intent = new Intent(this,SetLocation.class);
             startActivityForResult(intent,2);
             return true;
-        }
+        }*/
 
         else if(item.getItemId() == R.id.save)
         {
@@ -195,7 +195,6 @@ public class MainActivity extends Activity implements View.OnClickListener
             }
         }
     }
-
     public void onStart()
     {
         super.onStart();
@@ -203,11 +202,6 @@ public class MainActivity extends Activity implements View.OnClickListener
         double lat = Double.parseDouble ( prefs.getString("lat", "50.9") );
         double lon = Double.parseDouble ( prefs.getString("lon", "-1.4") );
         int dzl = Integer.parseInt ( prefs.getString("dzl","12"));
-        //PREVIOUS MAPPING
-
-        // NEW METHOD FOR POI /  CURRENT CENTER???
-        /*double lat = MapView.getMapCenter().getLatitude();
-        double lon = MapView.getMapCenter().getLongitude();     */
 
 
 
