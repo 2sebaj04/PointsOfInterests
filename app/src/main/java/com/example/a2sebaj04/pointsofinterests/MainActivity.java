@@ -24,7 +24,9 @@ import org.osmdroid.views.overlay.OverlayItem;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class MainActivity extends Activity implements View.OnClickListener
@@ -32,7 +34,7 @@ public class MainActivity extends Activity implements View.OnClickListener
 {
 
     MapView mv;
-    ItemizedIconOverlay<OverlayItem> items;
+    ItemizedIconOverlay<OverlayItem> Markers;
     ItemizedIconOverlay.OnItemGestureListener<OverlayItem> markerGestureListener;
 
     public void onCreate(Bundle savedInstanceState)
@@ -41,19 +43,22 @@ public class MainActivity extends Activity implements View.OnClickListener
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Button submitButton = (Button) findViewById(R.id.submitButton);
+        Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
         submitButton.setOnClickListener(this);
+
+
 
         // this line tells OpenStreetMap about our app.
         // If you miss this out, you might get banned from OSM servers
-        Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
+
 
         mv = (MapView)findViewById(R.id.map1);
 
         mv.setBuiltInZoomControls(true);
-        mv.getController().setZoom(17);
+        mv.getController().setZoom(15);
         mv.getController().setCenter(new GeoPoint(51.504,0.027)); // West Silvertown
 
-        items = new ItemizedIconOverlay<OverlayItem>(this, new ArrayList<OverlayItem>(), markerGestureListener);
+        Markers = new ItemizedIconOverlay<OverlayItem>(this, new ArrayList<OverlayItem>(), markerGestureListener);
 
         markerGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>()
         {
@@ -68,46 +73,20 @@ public class MainActivity extends Activity implements View.OnClickListener
                 Toast.makeText(MainActivity.this, item.getSnippet(), Toast.LENGTH_SHORT).show();
                 return true;
             }
+
         };
+    }
 
-        try
-        {
-
-            BufferedReader reader = new BufferedReader(new FileReader(Environment.getExternalStorageDirectory().getAbsolutePath()+"/poi.txt"));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] components = line.split(",");
-
-                if (components.length == 5) {
-
-                    OverlayItem currentPoi = new OverlayItem(components[0], components[2], new GeoPoint(Double.parseDouble(components[4]),
-                            Double.parseDouble(components[3])));
-                    //reads lon & lat as string so convert to a double using Double.parseDouble
-                    items.addItem(currentPoi);
-                }
-            }
-        }
-        catch (IOException e) {
-            new AlertDialog.Builder(this).setMessage("ERROR: " + e).setPositiveButton("OK", null).show();
-        }
-
-
-        OverlayItem westSilvertown = new OverlayItem("West Silvertown", "My hometown formerly known as Britannia Village", new GeoPoint(51.5040, 0.027));
-        OverlayItem cityAirport = new OverlayItem("London City Airport", "The capital's airport", new GeoPoint(51.504, 0.0524));
-
-        items.addItem(westSilvertown);
-        items.addItem(new OverlayItem("West Silvertown", "Britannia Village", new GeoPoint(51.504,0.027)));
-
-        items.addItem(cityAirport);
-        items.addItem(new OverlayItem("London City Airport", "The capital's airport", new GeoPoint(51.504, 0.0524)));
-
-        mv.getOverlays().add(items);
-
-
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater=getMenuInflater();
+        inflater.inflate(R.menu.poi_menu, menu);
+        return true;
     }
 
 
-    @Override
+
     public void onClick(View view) {
         EditText latitudeEditText = (EditText) findViewById(R.id.latitude);
         double latitude = Double.parseDouble(latitudeEditText.getText().toString());
@@ -121,57 +100,99 @@ public class MainActivity extends Activity implements View.OnClickListener
     }
 
 
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        MenuInflater inflater=getMenuInflater();
-        inflater.inflate(R.menu.save_load, menu);
-        return true;
-    }
+
 
 
     public boolean onOptionsItemSelected(MenuItem item)
     {
+        if (item.getItemId() == R.id.addpoi) {
+            Intent intent = new Intent(this, AddPOI.class);
+            startActivityForResult(intent, 0);
+            return true;
+        }
+        if(item.getItemId() == R.id.choosemap)
+        {
+            // react to the menu item being selected...
+            Intent intent = new Intent(this,MapChooseActivity.class);
+            startActivityForResult(intent,1);
+            return true;
+        }
 
-        if(item.getItemId() == R.id.setlocation)
+        else if(item.getItemId() == R.id.setlocation)
         {
             Intent intent = new Intent(this,SetLocation.class);
             startActivityForResult(intent,2);
             return true;
         }
+
+        else if(item.getItemId() == R.id.save)
+        {
+            // text file should be saved in the directory automatically
+
+
+            try
+            {
+                PrintWriter pw = new PrintWriter( new FileWriter( Environment.getExternalStorageDirectory().getAbsolutePath() + "/point.txt"));
+                for(int i = 0; i< Markers.size(); i++) {
+                    OverlayItem item1 = Markers.getItem(i);
+                    pw.println(item1.getTitle() + "," + item1.getSnippet() + "," + item1.getPoint() + "");
+                }
+                pw.close(); // close the file to ensure data is flushed to file
+            }
+            catch(IOException e) {
+                new AlertDialog.Builder(this).setMessage("ERROR: " + e).
+                        setPositiveButton("OK", null).show();
+            }
+
+            return true;
+        }
+        else if(item.getItemId() == R.id.load) {
+
+            return true; // this should load the poi
+        }
         return false;
     }
 
-    protected void onActivityResult(int requestCode,int resultCode,Intent intent)
-    {
+    protected void onActivityResult(int requestCode,int resultCode,Intent intent) {
 
-        if(requestCode==1)
-        {
+        if (requestCode == 0) {
+            if (resultCode == RESULT_OK) {
+                Bundle bundle = intent.getExtras();
+                String addname = bundle.getString("com.example.edittext1");
+                String addtype = bundle.getString("com.example.edittext2");
+                String add_des = bundle.getString("com.example.edittext3");
 
-            if (resultCode==RESULT_OK)
-            {
-                Bundle extras=intent.getExtras();
-                boolean cyclemap = extras.getBoolean("com.example.cyclemap");
-                if(cyclemap==true)
-                {
-                    mv.setTileSource(TileSourceFactory.CYCLEMAP);
-                }
 
-                else{
-                    mv.setTileSource(TileSourceFactory.MAPNIK);
-                }
+                double longitude = mv.getMapCenter().getLongitude();
+                double latitude = mv.getMapCenter().getLatitude();
+
+                OverlayItem Item = new OverlayItem(addname, add_des, new GeoPoint(latitude, longitude));
+                Markers.addItem(Item);
+
+
             }
-        }
+
+            else if (requestCode == 1) {
+
+                if (resultCode == RESULT_OK) {
+                    Bundle extras = intent.getExtras();
+                    boolean cyclemap = extras.getBoolean("com.example.cyclemap");
+                    if (cyclemap == true) {
+                        mv.setTileSource(TileSourceFactory.CYCLEMAP);
+                    } else {
+                        mv.setTileSource(TileSourceFactory.MAPNIK);
+                    }
+                }
+            } else if (requestCode == 2)
 
 
-        else if(requestCode==2)
+            {
+                Bundle extras = intent.getExtras();
 
-
-        {
-            Bundle extras=intent.getExtras();
-
-            double latitude = extras.getDouble("com.example.latitude");
-            double longitude = extras.getDouble("com.example.longitude");
-            mv.getController().setCenter(new GeoPoint(latitude,longitude));
+                double latitude = extras.getDouble("com.example.latitude");
+                double longitude = extras.getDouble("com.example.longitude");
+                mv.getController().setCenter(new GeoPoint(latitude, longitude));
+            }
         }
     }
 
