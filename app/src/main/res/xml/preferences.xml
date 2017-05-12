@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <EditTextPreference android:key="lat" android:defaultValue="50.9" android:title="Latitude" android:summary="Latitude to show the map at initially." />
-    <EditTextPreference android:key="lon" android:defaultValue="-1.4" android:title="Longitude" android:summary="Longitude to show the map at initially." />
-    <EditTextPreference android:key="dzl" android:defaultValue="12" android:title="zoom" android:summary="Default zoom level of the map." />
+    <EditTextPreference android:key="U" android:defaultValue="" android:title="Upload" android:summary="Upload to the web" />
+    <EditTextPreference android:key="UW" android:defaultValue="" android:title="Do Not upload" android:summary="Don't Upload" />
 </PreferenceScreen>

@@ -8,7 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 
 /**
- * Created by 2sebaj04 on 11/05/2017.
+ * Created by 2sebaj04 on 05/05/2017.
  */
 public class AddPOI extends Activity implements View.OnClickListener {
 

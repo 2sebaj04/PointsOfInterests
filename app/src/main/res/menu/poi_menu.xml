@@ -2,10 +2,8 @@
 
 <menu
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/setlocation" android:title="Set Location"/>
     <item android:id="@+id/addpoi" android:title="Add Point Of Interest"/>
     <item android:id="@+id/preferences" android:title="Preferences" />
-    <item android:id="@+id/choosemap" android:title="Choose Map"/>
     <item android:id="@+id/save" android:title="Save"/>
     <item android:id="@+id/load" android:title="Load"/>
 </menu>

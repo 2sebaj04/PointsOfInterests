@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">PointsOfInterests</string>
-    <string name="setlocation">Set Location</string>
-    <string name="Preferences">Preferences</string>
+    <string name="preferences">Preferences</string>
+    <string name="addpoi"> Add Point of Interest</string>
     <string name="save"> Save</string>
     <string name="load"> Load</string>
 </resources>

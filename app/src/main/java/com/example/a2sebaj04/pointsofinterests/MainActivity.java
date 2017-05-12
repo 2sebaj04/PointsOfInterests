@@ -34,7 +34,7 @@ public class MainActivity extends Activity implements View.OnClickListener
 {
 
     MapView mv;
-    ItemizedIconOverlay<OverlayItem> Markers;
+    ItemizedIconOverlay<OverlayItem> marker;
     ItemizedIconOverlay.OnItemGestureListener<OverlayItem> markerGestureListener;
 
     public void onCreate(Bundle savedInstanceState)
@@ -58,7 +58,6 @@ public class MainActivity extends Activity implements View.OnClickListener
         mv.getController().setZoom(15);
         mv.getController().setCenter(new GeoPoint(51.504,0.027)); // West Silvertown
 
-        Markers = new ItemizedIconOverlay<OverlayItem>(this, new ArrayList<OverlayItem>(), markerGestureListener);
 
         markerGestureListener = new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>()
         {
@@ -73,20 +72,42 @@ public class MainActivity extends Activity implements View.OnClickListener
                 Toast.makeText(MainActivity.this, item.getSnippet(), Toast.LENGTH_SHORT).show();
                 return true;
             }
-
         };
+        marker = new ItemizedIconOverlay<OverlayItem>(this, new ArrayList<OverlayItem>(), markerGestureListener);
+        OverlayItem westSilvertown = new OverlayItem("West Silvertown", "My hometown formerly known as Britannia Village", new GeoPoint(51.5040, 0.027));
+
+        marker.addItem(westSilvertown);
+        marker.addItem(new OverlayItem("West Silvertown", "Britannia Village", new GeoPoint(51.504,0.027))); //Manually added Point of Interest Also default location
+
+        mv.getOverlays().add(marker);
+
+        try
+        {
+
+            BufferedReader reader = new BufferedReader(new FileReader(Environment.getExternalStorageDirectory().getAbsolutePath()+"/point.txt"));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] components = line.split(",");
+
+                if (components.length == 5) {
+
+                    OverlayItem currentPoi = new OverlayItem(components[0], components[2], new GeoPoint(Double.parseDouble(components[4]),
+                            Double.parseDouble(components[3])));
+                    //reads lon & lat as string so convert to a double using Double.parseDouble
+                    marker.addItem(currentPoi);
+                }
+            }
+        }
+        catch (IOException e) {
+            new AlertDialog.Builder(this).setMessage("ERROR: " + e).setPositiveButton("OK", null).show();
+        }
+
+
+
     }
+
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        MenuInflater inflater=getMenuInflater();
-        inflater.inflate(R.menu.poi_menu, menu);
-        return true;
-    }
-
-
-
     public void onClick(View view) {
         EditText latitudeEditText = (EditText) findViewById(R.id.latitude);
         double latitude = Double.parseDouble(latitudeEditText.getText().toString());
@@ -99,58 +120,47 @@ public class MainActivity extends Activity implements View.OnClickListener
 
     }
 
-
-
-
-
-    public boolean onOptionsItemSelected(MenuItem item)
+    public boolean onCreateOptionsMenu(Menu menu)
     {
+        MenuInflater inflater=getMenuInflater();
+        inflater.inflate(R.menu.poi_menu, menu);
+        return true;
+    }
+
+
+    public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.addpoi) {
             Intent intent = new Intent(this, AddPOI.class);
             startActivityForResult(intent, 0);
             return true;
         }
-        /*if(item.getItemId() == R.id.choosemap)
+
+
         {
-            // react to the menu item being selected...
-            Intent intent = new Intent(this,MapChooseActivity.class);
-            startActivityForResult(intent,1);
-            return true;
-        }
-
-        else if(item.getItemId() == R.id.setlocation)
-        {
-            Intent intent = new Intent(this,SetLocation.class);
-            startActivityForResult(intent,2);
-            return true;
-        }*/
-
-        else if(item.getItemId() == R.id.save)
-        {
-            // text file should be saved in the directory automatically
 
 
-            try
-            {
-                PrintWriter pw = new PrintWriter( new FileWriter( Environment.getExternalStorageDirectory().getAbsolutePath() + "/point.txt"));
-                for(int i = 0; i< Markers.size(); i++) {
-                    OverlayItem item1 = Markers.getItem(i);
-                    pw.println(item1.getTitle() + "," + item1.getSnippet() + "," + item1.getPoint() + "");
+            if (item.getItemId() == R.id.save) {
+                // text file should be saved in the directory automatically
+
+
+                try {
+                    PrintWriter pw = new PrintWriter(new FileWriter(Environment.getExternalStorageDirectory().getAbsolutePath() + "/save.txt"));
+                    for (int i = 0; i < marker.size(); i++) {
+                        OverlayItem item1 = marker.getItem(i);
+                        pw.println(item1.getTitle() + "," + item1.getSnippet() + "," + item1.getPoint() + "");
+                    }
+                    pw.close(); // close the file to ensure data is flushed to file
+                } catch (IOException e) {
+                    new AlertDialog.Builder(this).setMessage("ERROR: " + e).setPositiveButton("OK", null).show();
                 }
-                pw.close(); // close the file to ensure data is flushed to file
-            }
-            catch(IOException e) {
-                new AlertDialog.Builder(this).setMessage("ERROR: " + e).
-                        setPositiveButton("OK", null).show();
-            }
 
-            return true;
-        }
-        else if(item.getItemId() == R.id.load) {
+                return true;
+            } else if (item.getItemId() == R.id.load) {
 
-            return true; // this should load the poi
+                return true; // this should load the poi
+            }
+            return false;
         }
-        return false;
     }
 
     protected void onActivityResult(int requestCode,int resultCode,Intent intent) {
@@ -166,33 +176,13 @@ public class MainActivity extends Activity implements View.OnClickListener
                 double longitude = mv.getMapCenter().getLongitude();
                 double latitude = mv.getMapCenter().getLatitude();
 
-                OverlayItem Item = new OverlayItem(addname, add_des, new GeoPoint(latitude, longitude));
-                Markers.addItem(Item);
+                OverlayItem Item = new OverlayItem(addname, add_des, addtype, new GeoPoint(latitude, longitude));
+                marker.addItem(Item);
 
 
             }
 
-            else if (requestCode == 1) {
 
-                if (resultCode == RESULT_OK) {
-                    Bundle extras = intent.getExtras();
-                    boolean cyclemap = extras.getBoolean("com.example.cyclemap");
-                    if (cyclemap == true) {
-                        mv.setTileSource(TileSourceFactory.CYCLEMAP);
-                    } else {
-                        mv.setTileSource(TileSourceFactory.MAPNIK);
-                    }
-                }
-            } else if (requestCode == 2)
-
-
-            {
-                Bundle extras = intent.getExtras();
-
-                double latitude = extras.getDouble("com.example.latitude");
-                double longitude = extras.getDouble("com.example.longitude");
-                mv.getController().setCenter(new GeoPoint(latitude, longitude));
-            }
         }
     }
     public void onStart()
