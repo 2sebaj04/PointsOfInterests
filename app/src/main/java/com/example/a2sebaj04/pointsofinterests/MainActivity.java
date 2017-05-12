@@ -168,15 +168,15 @@ public class MainActivity extends Activity implements View.OnClickListener
         if (requestCode == 0) {
             if (resultCode == RESULT_OK) {
                 Bundle bundle = intent.getExtras();
-                String addname = bundle.getString("com.example.edittext1");
-                String addtype = bundle.getString("com.example.edittext2");
-                String add_des = bundle.getString("com.example.edittext3");
-
+                String addname = bundle.getString("com.example.et1");
+                String addtype = bundle.getString("com.example.et2");
+                String add_des = bundle.getString("com.example.et3");
 
                 double longitude = mv.getMapCenter().getLongitude();
                 double latitude = mv.getMapCenter().getLatitude();
 
                 OverlayItem Item = new OverlayItem(addname, add_des, addtype, new GeoPoint(latitude, longitude));
+
                 marker.addItem(Item);
 
 
@@ -184,6 +184,11 @@ public class MainActivity extends Activity implements View.OnClickListener
 
 
         }
+    }
+
+    protected void onStop() {
+        super.onStop();  // Always call the superclass method first
+        //save();   save using the onStop method
     }
     public void onStart()
     {
@@ -193,7 +198,7 @@ public class MainActivity extends Activity implements View.OnClickListener
         double lon = Double.parseDouble ( prefs.getString("lon", "-1.4") );
         int dzl = Integer.parseInt ( prefs.getString("dzl","12"));
 
-
+        // save = prefs.getBoolean("save", false);   save button attempt
 
 
 
